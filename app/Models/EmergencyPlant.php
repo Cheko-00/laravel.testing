@@ -16,4 +16,14 @@ class EmergencyPlant extends Model
     {
         return $this->belongsTo(Place::class);
     }
+
+    public function generator()
+    {
+        return $this->belongsTo(Generator::class);
+    }
+
+    public function engine()
+    {
+        return $this->belongsTo(Engine::class);
+    }
 }
