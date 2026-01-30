@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Generator extends Model
+class Engine extends Model
 {
     protected $fillable = [
-        'generator_brand',
-        'generator_model',
+        'engine_brand',
+        'engine_model',
         'serial_number',
     ];
 
