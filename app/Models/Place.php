@@ -30,4 +30,9 @@ class Place extends Model
     {
         return $this->hasMany(EmergencyPlant::class);
     }
+
+    public function airConditioners()
+    {
+        return $this->hasMany(AirConditioner::class);
+    }   
 }
