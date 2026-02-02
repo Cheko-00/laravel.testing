@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('emergency_plants', function (Blueprint $table) {
+        Schema::create('equipments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('place_id');
             $table->foreign('place_id')->references('id')->on('places')->onDelete('cascade');
-            $table->string('capacitance'); // Capacidad
-            $table->string('trademark'); // Marca
+            $table->string('capacity')->nullable();
+            $table->string('brand')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('emergency_plants');
+        Schema::dropIfExists('equipments');
     }
 };

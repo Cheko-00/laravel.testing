@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->text('localization')->nullable();
             $table->enum('status', ['active', 'inactive', 'under_maintenance'])->default('active');
+            $table->unsignedBigInteger('region_id');
+            $table->foreign('region_id')->references('id')->on('regions')->onDelete('cascade');
             $table->timestamps();
         });
     }

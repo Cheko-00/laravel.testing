@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AirConditioner extends Model
+class Equipment extends Model
 {
     //
 }

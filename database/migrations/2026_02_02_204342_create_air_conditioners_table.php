@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('air_conditioners', function (Blueprint $table) {
             $table->id();
-            $table->string('serial_number')->unique();
-            $table->string('brand');
+
+            $table->foreignId('equipment_id')->constrained('equipments')->cascadeOnDelete();
+
+            $table->decimal('capacity_tr', 6, 2);
+            $table->enum('type', ['split', 'window', 'package']); // split, window, package, etc
             $table->string('model');
-            $table->decimal('capacity_tr', 8, 2);
-            $table->enum('refrigerant_type', ['R22', 'R410A', 'R32', 'R134a']);
-            $table->unsignedBigInteger('place_id');
-            $table->foreign('place_id')->references('id')->on('places')->onDelete('cascade');
+            $table->string('brand');
+            $table->string('refrigerant');
+            $table->string('serial_number')->unique();
             $table->timestamps();
         });
     }
