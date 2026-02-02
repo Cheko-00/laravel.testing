@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::create('generators', function (Blueprint $table) {
             $table->id();
-            $table->string('generator_brand');
-            $table->string('generator_model');
-            $table->string('serial_number');
+            $table->unsignedBigInteger('equipment_id');
+            $table->foreign('equipment_id')->references('id')->on('equipments')->onDelete('cascade');
+
+            $table->string('brand');
+            $table->string('model');
+            $table->string('serial_number')->unique();
+
+            // Engine (embedded)
+            $table->string('engine_brand');
+            $table->string('engine_model');
+            $table->string('engine_serial_number');
             $table->timestamps();
         });
     }

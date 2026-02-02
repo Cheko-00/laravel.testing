@@ -13,26 +13,11 @@ class Place extends Model
         'address',
         'localization',
         'status',
-        'region_id',
+        'region_id'
     ];
-
-    public function region()
-    {
-        return $this->belongsTo(Region::class);
-    }
 
     public function contacts()
     {
         return $this->hasMany(Contact::class);
     }
-
-    public function emergencyPlants()
-    {
-        return $this->hasMany(EmergencyPlant::class);
-    }
-
-    public function airConditioners()
-    {
-        return $this->hasMany(AirConditioner::class);
-    }   
 }
