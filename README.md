@@ -13,7 +13,7 @@ Proyecto desarrollado en Laravel para pruebas y aprendizaje de arquitectura MVC,
 autenticación y buenas prácticas.
 
 ## Características
-
+- Uso de Docker
 - Autenticación con Laravel Fortify
 - Arquitectura MVC - DDD (en desarrollo)
 - Manejo de roles y permisos (en desarrollo)
