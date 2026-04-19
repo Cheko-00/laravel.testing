@@ -1,13 +1,32 @@
 services:
-  mariadb:
-    image: mariadb:latest
-    container_name: laravel_db
-    restart: unless-stopped
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: laravel_testing
+    volumes:
+      - .:/var/www
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/config.d/default.conf
+    depends_on:
+      - app
+  db:
+    image: mysql:8.0
+    container_name: db_testing
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: test
-      MYSQL_USER: test_user
-      MYSQL_PASSWORD: test_password
+      MYSQL_DATABASE: testing
+      MYSQL_USER: root
+      MYSQL_PASSWORD: test
     ports:
       - "3306:3306"
     volumes:
