@@ -1,8 +1,7 @@
 <?php
+
+use App\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('test', function ()
-{
-    return 'Backend';
-});
+Route::apiResource('teams', TeamController::class);

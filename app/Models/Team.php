@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
-    use Illuminate\Database\Eloquent\Factories\HasFactory;
-    use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-    class Team extends Model {
-        use HasFactory;
+class Team extends Model
+{
+    use HasFactory;
 
-        protected $fillable = [
+    protected $fillable = [
         'name',
         'description',
         'is_active',
-        ];
+    ];
 
-        protected function casts()
-        {
+    protected function casts()
+    {
         return [
-        'is_active' => 'boolean',
+            'is_active' => 'boolean',
         ];
-        }
     }
+}
