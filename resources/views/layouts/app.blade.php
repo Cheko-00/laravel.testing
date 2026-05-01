@@ -15,7 +15,9 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
 </head>
+@stack('styles')
 <body>
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
@@ -30,6 +32,9 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('teams.index')}}" }}>{{__('Teams')}}</a>
+                        </li>
 
                     </ul>
 
@@ -76,5 +81,6 @@
             @yield('content')
         </main>
     </div>
+@stack('scripts')
 </body>
 </html>
