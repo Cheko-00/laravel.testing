@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamMemberController;
@@ -23,4 +24,5 @@ Route::middleware(['auth'])->group(function (){
         Route::put('/{user}/role', [TeamMemberController::class, 'updateRole'])->name('teams.members.update-role');
     });
     Route::resource('users', UserController::class);
+    Route::resource('categories', CategoryController::class);
 });
