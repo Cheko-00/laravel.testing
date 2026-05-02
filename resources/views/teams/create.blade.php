@@ -21,8 +21,8 @@
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ route('teams.index') }}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ route('teams.index') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 @endsection

@@ -35,8 +35,15 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{route('teams.index')}}" }}>{{__('Teams')}}</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{route('users.index')}}" }}>{{__('Users')}}</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{__('Settings')}}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{route('categories.index')}}">{{__('Categories')}}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{route('users.index')}}">{{__('Users')}}</a></li>
+                            </ul>
                         </li>
                     </ul>
 
