@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTeamRequest;
 use App\Http\Requests\UpdateTeamRequest;
 use App\Models\Team;
+use App\Models\User;
 
 class TeamController extends Controller
 {
@@ -13,7 +14,7 @@ class TeamController extends Controller
      */
     public function index()
     {
-        $teams = Team::latest()->paginate(6);
+        $teams = Team::withCount('users')->latest()->paginate(6);
         return view('teams.index', compact('teams'));
     }
 
@@ -38,6 +39,10 @@ class TeamController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+    public function show(Team $team){
+        return view('teams.show', compact('team'));
+    }
+
     public function edit(Team $team)
     {
         return view('teams.edit', compact('team'));
@@ -57,7 +62,13 @@ class TeamController extends Controller
      */
     public function destroy(Team $team)
     {
+        if ($team->users()->exists()) {
+            return redirect()->route('teams.index')
+            ->with('error', "Cannot delete team '{$team->name}'  Please reassign them first.");
+        }
+
         $team->delete();
-        return redirect()->route('teams.index')->with('success', 'Team deleted successfully.');
+
+        return redirect()->route('teams.index')->with('success', 'Team removed correctly.');
     }
 }

@@ -11,7 +11,8 @@
                     <small class="text-muted">{{ $teams->total() }} teams registered</small>
                 </div>
                 <a href="{{ route('teams.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
                     New Team
@@ -21,6 +22,7 @@
     </div>
 
     <div class="container pb-5">
+        @include('partials.alerts')
 
         {{-- Toolbar --}}
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -30,14 +32,17 @@
             </small>
             <div class="btn-group btn-group-sm" role="group">
                 <button type="button" class="btn btn-outline-secondary active" id="btnList" onclick="setView('list')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
                     List
                 </button>
                 <button type="button" class="btn btn-outline-secondary" id="btnGrid" onclick="setView('grid')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/>
                     </svg>
                     Cards
                 </button>
@@ -53,6 +58,7 @@
                         <tr>
                             <th class="text-uppercase text-muted fw-semibold small ps-4">Team</th>
                             <th class="text-uppercase text-muted fw-semibold small">Description</th>
+                            <th class="text-uppercase text-muted fw-semibold small">Members</th> {{-- Nueva columna --}}
                             <th class="text-uppercase text-muted fw-semibold small">Status</th>
                             <th class="text-uppercase text-muted fw-semibold small text-end pe-4">Actions</th>
                         </tr>
@@ -62,14 +68,23 @@
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="bg-primary bg-opacity-10 text-primary rounded-2 d-flex align-items-center justify-content-center fw-bold"
-                                             style="width:36px; height:36px; font-size:.8rem; flex-shrink:0;">
+                                        <div
+                                            class="bg-primary bg-opacity-10 text-primary rounded-2 d-flex align-items-center justify-content-center fw-bold"
+                                            style="width:36px; height:36px; font-size:.8rem; flex-shrink:0;">
                                             {{ strtoupper(substr($team->name, 0, 2)) }}
                                         </div>
                                         <span class="fw-semibold">{{ $team->name }}</span>
                                     </div>
                                 </td>
                                 <td class="text-muted small">{{ Str::limit($team->description, 60) }}</td>
+
+                                {{-- Contador de usuarios --}}
+                                <td>
+                                    <span class="badge bg-info text-dark rounded-pill">
+                                        {{ $team->users_count }} {{ Str::plural('member', $team->users_count) }}
+                                    </span>
+                                </td>
+
                                 <td>
                                     @if($team->is_active)
                                         <span class="badge rounded-pill text-bg-success">Active</span>
@@ -79,7 +94,12 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-flex gap-2 justify-content-end">
-                                        <a href="{{ route('teams.edit', $team) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                        <a href="{{ route('teams.members.create', $team) }}"
+                                           class="btn btn-outline-secondary btn-sm">Add</a>
+                                        <a href="{{ route('teams.show', $team) }}"
+                                           class="btn btn-outline-secondary btn-sm">Show</a>
+                                        <a href="{{ route('teams.edit', $team) }}"
+                                           class="btn btn-outline-secondary btn-sm">Edit</a>
                                         <button type="button" class="btn btn-outline-danger btn-sm"
                                                 data-bs-toggle="modal" data-bs-target="#deleteModal"
                                                 data-team-name="{{ $team->name }}"
@@ -91,7 +111,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-5">No teams found.</td>
+                                <td colspan="5" class="text-center text-muted py-5">No teams found.</td>
                             </tr>
                         @endforelse
                         </tbody>
@@ -111,8 +131,9 @@
                             <div class="card h-100 border shadow-sm">
                                 <div class="card-body d-flex flex-column gap-2">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="bg-primary bg-opacity-10 text-primary rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                             style="width:44px; height:44px; font-size:1rem;">
+                                        <div
+                                            class="bg-primary bg-opacity-10 text-primary rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                                            style="width:44px; height:44px; font-size:1rem;">
                                             {{ strtoupper(substr($team->name, 0, 2)) }}
                                         </div>
                                         <div>
@@ -124,9 +145,48 @@
                                             @endif
                                         </div>
                                     </div>
+
                                     <p class="text-muted small flex-grow-1 mb-0">{{ Str::limit($team->description, 100) }}</p>
+
+                                    {{-- Contador de usuarios --}}
+                                    <div class="mt-2 pt-2 border-top">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                     stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                                </svg>
+                                                {{ $team->users_count }} {{ Str::plural('member', $team->users_count) }}
+                                            </small>
+
+                                            {{-- Mostrar avatares de los primeros 3 miembros (opcional) --}}
+                                            @if($team->users_count > 0)
+                                                <div class="d-flex">
+                                                    @foreach($team->users->take(3) as $user)
+                                                        <div
+                                                            class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                                                            style="width:24px; height:24px; font-size:10px; margin-left: -5px; border: 1px solid white;">
+                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                        </div>
+                                                    @endforeach
+                                                    @if($team->users_count > 3)
+                                                        <div
+                                                            class="bg-light rounded-circle d-flex align-items-center justify-content-center"
+                                                            style="width:24px; height:24px; font-size:10px; margin-left: -5px; border: 1px solid white;">
+                                                            +{{ $team->users_count - 3 }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="card-footer bg-transparent d-flex gap-2 justify-content-end">
+                                    <a href="{{ route('teams.members.create', $team) }}"
+                                       class="btn btn-outline-secondary btn-sm">Add</a>
+                                    <a href="{{ route('teams.show', $team) }}" class="btn btn-outline-secondary btn-sm">Show</a>
                                     <a href="{{ route('teams.edit', $team) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
                                     <button type="button" class="btn btn-outline-danger btn-sm"
                                             data-bs-toggle="modal" data-bs-target="#deleteModal"
@@ -157,10 +217,13 @@
         <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
             <div class="modal-content border-0 shadow">
                 <div class="modal-body text-center py-4 px-4">
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                         style="width:56px; height:56px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0a1 1 0 01-1-1V5a1 1 0 011-1h6a1 1 0 011 1v1a1 1 0 01-1 1H9z"/>
+                    <div
+                        class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width:56px; height:56px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0a1 1 0 01-1-1V5a1 1 0 011-1h6a1 1 0 011 1v1a1 1 0 01-1 1H9z"/>
                         </svg>
                     </div>
                     <h5 class="fw-bold mb-1">Delete team</h5>

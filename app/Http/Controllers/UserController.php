@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('team')->latest()->paginate(9);
+        $users = User::with('teams')->latest()->paginate(9);
         return view('users.index', compact('users'));
     }
 

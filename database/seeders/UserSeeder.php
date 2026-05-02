@@ -14,6 +14,10 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->count(10)->has(Team::factory()->count(1))->create();
+        User::factory()->count(10)->create()
+            ->each(function ($user) {
+                $team = Team::factory()->create();
+                $user->teams()->attach($team->id, ['role' => 'member']); // Especifica el role
+            });
     }
 }

@@ -71,7 +71,15 @@
                                     </div>
                                 </td>
                                 <td class="text-muted small">{{$user->email}}</td>
-                                <td class="text-muted small">{{$user->team?->name ?? 'No team'}}</td>
+                                <td class="text-muted small">
+                                    @if($user->teams->count() > 0)
+                                        @foreach($user->teams as $team)
+                                            <span class="badge bg-secondary me-1">{{ $team->name }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">No teams</span>
+                                    @endif
+                                </td>
 
                                 <td class="text-end pe-4">
                                     <div class="d-flex gap-2 justify-content-end">
@@ -113,7 +121,13 @@
                                         </div>
                                         <div>
                                             <p class="fw-bold mb-0">{{ $user->name }}</p>
-                                            <span class="badge rounded-pill text-bg-{{$user->team?->name ? 'primary' : 'secondary'}}">{{ $user->team?->name ?? 'No Team' }}</span>
+                                            @if($user->teams->count() > 0)
+                                                @foreach($user->teams as $team)
+                                                    <span class="badge bg-secondary me-1">{{ $team->name }}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="text-muted">No teams</span>
+                                            @endif
                                         </div>
                                     </div>
                                     <p class="text-muted small flex-grow-1 mb-0">{{ $user->email }}</p>
