@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamMemberController;
@@ -25,4 +26,5 @@ Route::middleware(['auth'])->group(function (){
     });
     Route::resource('users', UserController::class);
     Route::resource('categories', CategoryController::class);
+    Route::get('/priority-leves', [PriorityController::class, 'index'])->name('priorities.index');
 });

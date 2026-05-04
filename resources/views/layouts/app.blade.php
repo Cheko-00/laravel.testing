@@ -41,6 +41,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{{route('categories.index')}}">{{__('Categories')}}</a></li>
+                                <li><a class="dropdown-item" href="{{route('priorities.index')}}">{{__('Priorities')}}</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{route('users.index')}}">{{__('Users')}}</a></li>
                             </ul>
