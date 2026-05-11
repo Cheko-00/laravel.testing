@@ -95,6 +95,19 @@
                                 @enderror
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">Parent category <span class="text-muted">(optional)</span></label>
+                                <select name="parent_id" class="form-select">
+                                    <option value="">— None (top-level) —</option>
+                                    @foreach(\App\Models\Category::whereNull('parent_id')->orderBy('name')->get() as $parent)
+                                        <option value="{{ $parent->id }}"
+                                            {{ request('parent') == $parent->id ? 'selected' : '' }}>
+                                            {{ $parent->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             {{-- Botones --}}
                             <div class="d-flex gap-2 justify-content-end pt-3 border-top">
                                 <a href="{{ route('categories.index') }}" class="btn btn-light px-4">Cancel</a>
@@ -197,5 +210,19 @@
         if (nameInput.value) {
             slugInput.value = generateSlug(nameInput.value);
         }
+
+        // Rotar chevron al expandir/colapsar
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(row => {
+            const target = document.querySelector(row.dataset.bsTarget);
+            if (!target) return;
+            target.addEventListener('show.bs.collapse', () => {
+                row.querySelector('.chevron-icon')?.style.setProperty('transform', 'rotate(90deg)');
+            });
+            target.addEventListener('hide.bs.collapse', () => {
+                row.querySelector('.chevron-icon')?.style.setProperty('transform', 'rotate(0deg)');
+            });
+        });
+
     </script>
 @endpush
+

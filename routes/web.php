@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PriorityController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamMemberController;
@@ -26,5 +27,13 @@ Route::middleware(['auth'])->group(function (){
     });
     Route::resource('users', UserController::class);
     Route::resource('categories', CategoryController::class);
+    Route::get('/categories/{category}/subcategories', function (\App\Models\Category $category) {
+        return $category->subcategories()
+            ->where('is_active', true)
+            ->select('id', 'name', 'color')
+            ->get();
+    });
     Route::get('/priority-leves', [PriorityController::class, 'index'])->name('priorities.index');
+
+    Route::resource('tickets', TicketController::class);
 });

@@ -27,6 +27,7 @@ class StoreCategoryRequest extends FormRequest
             'slug'=> 'required',
             'color' => 'required',
             'is_active' => 'required',
+            'parent_id' => ['nullable', 'exists:categories,id'],
         ];
     }
 }
