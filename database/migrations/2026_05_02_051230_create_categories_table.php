@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug');
             $table->string('color')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->foreignId('parent_id')->nullable()->constrained('categories')->cascadeOnDelete();
             $table->timestamps();
         });
     }
