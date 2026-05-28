@@ -1,418 +1,643 @@
 @extends('layouts.app')
 
 @section('content')
-    {{-- Page Header --}}
-    <div class="bg-white border-bottom mb-4">
-        <div class="container py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h4 fw-bold mb-0">Categories</h1>
-                    {{-- FIX: texto mixto "categorías registered" → inglés consistente --}}
-                    <small class="text-muted">{{ $categories->total() }} categories registered</small>
+<div class="container px-3 px-md-4 py-4">
+
+    {{-- Alertas de sesión --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+            <i class="ti ti-circle-check" style="font-size:18px"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+            <i class="ti ti-alert-circle" style="font-size:18px"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    @endif
+
+    {{-- Header --}}
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h4 fw-semibold mb-0">{{ __('Categories') }}</h1>
+            <p class="text-muted small mb-0">{{ __('Manage categories and subcategories') }}</p>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-2"
+                data-bs-toggle="collapse"
+                data-bs-target="#formNueva"
+                aria-expanded="false"
+                aria-controls="formNueva">
+            <i class="ti ti-plus" style="font-size:16px"></i>
+            {{ __('New category') }}
+        </button>
+    </div>
+
+    {{-- Métricas --}}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border h-100">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">{{ __('Total') }}</p>
+                    <p class="h5 fw-semibold mb-0">{{ $totalCount }}</p>
                 </div>
-                <a href="{{ route('categories.create') }}"
-                   class="btn btn-primary btn-sm d-flex align-items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    New Category
-                </a>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border h-100">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">{{ __('Active') }}</p>
+                    <p class="h5 fw-semibold mb-0 text-success">{{ $activeCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border h-100">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">{{ __('Inactive') }}</p>
+                    <p class="h5 fw-semibold mb-0 text-danger">{{ $inactiveCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border h-100">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">{{ __('Root') }}</p>
+                    <p class="h5 fw-semibold mb-0">{{ $rootCount }}</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="container pb-5">
-        @include('partials.alerts')
-
-        {{-- Toolbar --}}
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <small class="text-muted">
-                {{-- FIX: cuando no hay resultados firstItem()/lastItem() retornan null → evitar "–" vacío --}}
-                @if($categories->total() > 0)
-                    Showing <strong>{{ $categories->firstItem() }}–{{ $categories->lastItem() }}</strong>
-                    of <strong>{{ $categories->total() }}</strong>
-                @else
-                    No categories found
-                @endif
-            </small>
-            <div class="btn-group btn-group-sm" role="group" aria-label="View toggle">
-                <button type="button" class="btn btn-outline-secondary active" id="btnList"
-                        onclick="setView('list')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                    List
-                </button>
-                <button type="button" class="btn btn-outline-secondary" id="btnGrid"
-                        onclick="setView('grid')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/>
-                    </svg>
-                    Card
-                </button>
+    {{-- Formulario nueva categoría (colapsable) --}}
+    <div class="collapse mb-4 @error('name') show @enderror @error('slug') show @enderror" id="formNueva">
+        <div class="card border">
+            <div class="card-header bg-white border-bottom py-3">
+                <h2 class="h6 fw-semibold mb-0 d-flex align-items-center gap-2">
+                    <i class="ti ti-circle-plus text-primary" style="font-size:18px" aria-hidden="true"></i>
+                    {{ __('New category') }}
+                </h2>
             </div>
-        </div>
-
-        {{-- ── VISTA DE LISTA ── --}}
-        <div id="viewList">
-            <div class="card border shadow-sm">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th class="text-uppercase text-muted fw-semibold small ps-4">Name</th>
-                            <th class="text-uppercase text-muted fw-semibold small">Slug</th>
-                            <th class="text-uppercase text-muted fw-semibold small">Color</th>
-                            <th class="text-uppercase text-muted fw-semibold small">Status</th>
-                            <th class="text-uppercase text-muted fw-semibold small text-end pe-4">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @forelse($categories as $category)
-                            {{-- Fila categoría padre --}}
-                            <tr class="category-row"
-                                style="cursor: {{ $category->subcategories->count() ? 'pointer' : 'default' }};"
-                                @if($category->subcategories->count())
-                                    data-collapse-target="sub-{{ $category->id }}"
-                                aria-expanded="false"
-                                @endif>
-                                <td class="ps-4">
-                                    <div class="d-flex align-items-center gap-2">
-                                        {{-- Chevron: solo si tiene subcategorías --}}
-                                        @if($category->subcategories->count())
-                                            <svg class="chevron-icon text-muted"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                                 width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                                 stroke="currentColor" stroke-width="2.5"
-                                                 style="transition: transform .2s; flex-shrink:0;">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                      d="M9 5l7 7-7 7"/>
-                                            </svg>
-                                        @else
-                                            <span style="width:14px; flex-shrink:0;"></span>
-                                        @endif
-
-                                        <div class="bg-primary bg-opacity-10 text-primary rounded-2
-                                                        d-flex align-items-center justify-content-center fw-bold"
-                                             style="width:36px; height:36px; font-size:.8rem; flex-shrink:0;">
-                                            {{ strtoupper(substr($category->name, 0, 2)) }}
-                                        </div>
-                                        <div>
-                                            <span class="fw-semibold">{{ $category->name }}</span>
-                                            @if($category->subcategories->count())
-                                                <span class="badge bg-primary bg-opacity-10 text-primary ms-1"
-                                                      style="font-size:.7rem;">
-                                                        {{ $category->subcategories->count() }}
-                                                    </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-muted small"><code>{{ $category->slug }}</code></td>
-                                <td class="text-muted small">
-                                    <div class="d-flex align-items-center gap-2">
-                                            <span class="rounded-circle"
-                                                  style="width:16px; height:16px; background-color: {{ $category->color }};"></span>
-                                        {{ $category->color }}
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($category->is_active)
-                                        <span class="badge bg-success">Active</span>
-                                    @else
-                                        <span class="badge bg-secondary">Inactive</span>
-                                    @endif
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <a href="{{ route('categories.edit', $category) }}"
-                                           class="btn btn-outline-secondary btn-sm">Edit</a>
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
-                                                data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                                data-category-name="{{ $category->name }}"
-                                                data-action="{{ route('categories.destroy', $category) }}">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- Filas subcategorías (colapsables) --}}
-                            {{-- FIX: el <tr> collapse debe tener la clase "collapse" correctamente --}}
-                            <tr>
-                                <td colspan="5" class="p-0 border-0">
-                                    <div id="sub-{{ $category->id }}" class="collapse">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <tbody class="bg-light">
-                                            @foreach($category->subcategories as $sub)
-                                                <tr>
-                                                    <td class="ps-5" style="width:35%">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                 width="12" height="12" fill="none"
-                                                                 viewBox="0 0 24 24" stroke="currentColor"
-                                                                 stroke-width="2" class="text-muted"
-                                                                 style="flex-shrink:0;">
-                                                                <path stroke-linecap="round"
-                                                                      stroke-linejoin="round"
-                                                                      d="M9 5l7 7-7 7"/>
-                                                            </svg>
-                                                            <span class="text-muted small fw-semibold">
-                                                                        {{ $sub->name }}
-                                                                    </span>
-                                                        </div>
-                                                    </td>
-                                                    <td class="text-muted small">
-                                                        <code>{{ $sub->slug }}</code>
-                                                    </td>
-                                                    <td class="text-muted small">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                                    <span class="rounded-circle"
-                                                                          style="width:12px; height:12px; background-color: {{ $sub->color }};"></span>
-                                                            {{ $sub->color }}
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        @if($sub->is_active)
-                                                            <span class="badge bg-success">Active</span>
-                                                        @else
-                                                            <span class="badge bg-secondary">Inactive</span>
-                                                        @endif
-                                                    </td>
-                                                    <td class="text-end pe-4">
-                                                        <div class="d-flex gap-2 justify-content-end">
-                                                            <a href="{{ route('categories.edit', $sub) }}"
-                                                               class="btn btn-outline-secondary btn-sm">Edit</a>
-                                                            <button type="button"
-                                                                    class="btn btn-outline-danger btn-sm"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#deleteModal"
-                                                                    data-category-name="{{ $sub->name }}"
-                                                                    data-action="{{ route('categories.destroy', $sub) }}">
-                                                                Delete
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-
-                                            {{-- Botón agregar subcategoría --}}
-                                            <tr>
-                                                <td colspan="5" class="ps-5 py-2">
-                                                    <a href="{{ route('categories.create', ['parent' => $category->id]) }}"
-                                                       class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12"
-                                                             height="12" fill="none" viewBox="0 0 24 24"
-                                                             stroke="currentColor" stroke-width="2.5">
-                                                            <path stroke-linecap="round"
-                                                                  stroke-linejoin="round"
-                                                                  d="M12 4v16m8-8H4"/>
-                                                        </svg>
-                                                        Add subcategory
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
-                            </tr>
-
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-5">
-                                    There are no registered categories.
-                                </td>
-                            </tr>
-                        @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── VISTA DE TARJETAS (GRID) ── --}}
-        <div id="viewGrid" class="d-none">
-            @forelse($categories as $category)
-                @if($loop->first)
+            <form action="{{ route('categories.store') }}" method="POST">
+                @csrf
+                <div class="card-body">
                     <div class="row g-3">
-                        @endif
+                        <div class="col-12 col-md-6">
+                            <label for="name" class="form-label small fw-medium">
+                                {{ __('Name') }} <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   id="name"
+                                   name="name"
+                                   class="form-control form-control-sm @error('name') is-invalid @enderror"
+                                   value="{{ old('name') }}"
+                                   placeholder="ej. Tecnología"
+                                   required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="slug" class="form-label small fw-medium">
+                                {{ __('Slug') }} <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text text-muted">/</span>
+                                <input type="text"
+                                       id="slug"
+                                       name="slug"
+                                       class="form-control @error('slug') is-invalid @enderror"
+                                       value="{{ old('slug') }}"
+                                       placeholder="tecnologia"
+                                       required>
+                                @error('slug')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="form-text">{{ __('Auto-generated from name.') }}</div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="color" class="form-label small fw-medium">{{ __('Color') }}</label>
+                            <div class="input-group input-group-sm">
+                                <input type="color"
+                                       id="color"
+                                       class="form-control form-control-color form-control-sm"
+                                       value="{{ old('color', '#6366f1') }}"
+                                       style="max-width:48px">
+                                <input type="text"
+                                       id="colorHex"
+                                       name="color"
+                                       class="form-control"
+                                       value="{{ old('color', '#6366f1') }}"
+                                       placeholder="#6366f1">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="parent_id" class="form-label small fw-medium">{{ __('Parent category') }}</label>
+                            <select id="parent_id" name="parent_id" class="form-select form-select-sm">
+                                <option value="">{{ __('None (root)') }}</option>
+                                @foreach ($parentCategories as $parent)
+                                    <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
+                                        {{ $parent->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small fw-medium">{{ __('Status') }}</label>
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="is_active"
+                                       id="isActive"
+                                       value="1"
+                                       {{ old('is_active', true) ? 'checked' : '' }}>
+                                <label class="form-check-label small" for="isActive">{{ __('Active') }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top d-flex justify-content-end gap-2 py-3">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#formNueva">
+                        {{ __('Cancel') }}
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-primary d-flex align-items-center gap-2">
+                        <i class="ti ti-device-floppy" style="font-size:15px"></i>
+                        {{ __('Save category') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                        <div class="col-12 col-sm-6 col-lg-4">
-                            <div class="card h-100 border shadow-sm">
-                                <div class="card-body d-flex flex-column gap-2">
+    {{-- Tabla --}}
+    <div class="card border">
 
-                                    {{-- Header categoría --}}
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="rounded-2 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                             style="width:44px; height:44px; font-size:1rem;
-                                            background-color: {{ $category->color }}20;
-                                            color: {{ $category->color }};">
-                                            {{ strtoupper(substr($category->name, 0, 2)) }}
-                                        </div>
-                                        <div>
-                                            <p class="fw-bold mb-0">{{ $category->name }}</p>
-                                            <small class="text-muted">{{ $category->slug }}</small>
-                                        </div>
-                                    </div>
+        {{-- Filtros --}}
+        <div class="card-body border-bottom py-3">
+            <form method="GET" action="{{ route('categories.index') }}" class="row g-2 align-items-center">
+                <div class="col-12 col-sm-5 col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="ti ti-search text-muted" style="font-size:15px"></i>
+                        </span>
+                        <input type="text"
+                               name="search"
+                               class="form-control border-start-0 ps-0"
+                               placeholder="{{ __('Search by name or slug…') }}"
+                               value="{{ request('search') }}">
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3 col-md-2">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">{{ __('Status') }}</option>
+                        <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                    </select>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                    <select name="type" class="form-select form-select-sm">
+                        <option value="">{{ __('All categories') }}</option>
+                        <option value="root" {{ request('type') === 'root' ? 'selected' : '' }}>{{ __('Root only') }}</option>
+                        <option value="sub" {{ request('type') === 'sub' ? 'selected' : '' }}>{{ __('Subcategories only') }}</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 d-flex justify-content-md-end gap-2">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                        <i class="ti ti-adjustments-horizontal" style="font-size:15px"></i>
+                        <span class="d-none d-sm-inline">{{ __('Filter') }}</span>
+                    </button>
+                    @if (request()->hasAny(['search', 'status', 'type']))
+                        <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-x" style="font-size:15px"></i>
+                            <span class="d-none d-sm-inline">{{ __('Clear') }}</span>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
 
-                                    {{-- Color + Status --}}
-                                    <div class="d-flex align-items-center gap-2 mt-1">
-                                        <div class="rounded-circle"
-                                             style="width:14px; height:14px; background-color: {{ $category->color }};"></div>
-                                        <small class="text-muted">{{ $category->color }}</small>
-                                        @if($category->is_active)
-                                            <span class="badge bg-success ms-auto">Active</span>
-                                        @else
-                                            <span class="badge bg-secondary ms-auto">Inactive</span>
-                                        @endif
-                                    </div>
-
-                                    {{-- Subcategorías como pills --}}
-                                    @if($category->subcategories->count())
-                                        <hr class="my-1">
-                                        <div class="d-flex flex-wrap gap-1">
-                                            @foreach($category->subcategories as $sub)
-                                                {{-- Cada pill lleva al edit de la subcategoría --}}
-                                                <a href="{{ route('categories.edit', $sub) }}"
-                                                   class="badge rounded-pill border d-inline-flex align-items-center gap-1 text-decoration-none"
-                                                   style="background-color: {{ $sub->color }}18;
-                                                  color: {{ $sub->color }};
-                                                  border-color: {{ $sub->color }}50 !important;
-                                                  font-size: .72rem;">
-                                            <span class="rounded-circle"
-                                                  style="width:6px; height:6px; background-color: {{ $sub->color }}; flex-shrink:0;"></span>
-                                                    {{ $sub->name }}
-                                                </a>
-                                            @endforeach
-                                        </div>
+        {{-- Tabla responsive --}}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="min-width:580px">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3" style="width:40px">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                        </th>
+                        <th>{{ __('Name') }}</th>
+                        <th class="d-none d-md-table-cell">{{ __('Slug') }}</th>
+                        <th class="d-none d-sm-table-cell">{{ __('Color') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th class="d-none d-lg-table-cell">{{ __('Parent') }}</th>
+                        <th class="d-none d-md-table-cell text-muted" style="font-size:13px">{{ __('Created') }}</th>
+                        <th style="width:90px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($categories as $category)
+                        <tr>
+                            <td class="ps-3">
+                                <input type="checkbox" class="form-check-input" value="{{ $category->id }}">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if ($category->color)
+                                        <span class="rounded-circle d-inline-block flex-shrink-0"
+                                              style="width:10px;height:10px;background:{{ $category->color }}"></span>
                                     @else
-                                        <p class="text-muted small mb-0 fst-italic">No subcategories yet.</p>
+                                        <span class="rounded-circle d-inline-block flex-shrink-0 bg-secondary"
+                                              style="width:10px;height:10px"></span>
                                     @endif
-
+                                    <span class="fw-medium">{{ $category->name }}</span>
                                 </div>
-
-                                <div class="card-footer bg-transparent d-flex gap-2 justify-content-between align-items-center">
-                                    <a href="{{ route('categories.create', ['parent' => $category->id]) }}"
-                                       class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
-                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                                        </svg>
-                                        Add sub
-                                    </a>
-                                    <div class="d-flex gap-2">
-                                        <a href="{{ route('categories.edit', $category) }}"
-                                           class="btn btn-outline-secondary btn-sm">Edit</a>
-                                        <button type="button" class="btn btn-outline-danger btn-sm"
-                                                data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                                data-category-name="{{ $category->name }}"
-                                                data-action="{{ route('categories.destroy', $category) }}">
-                                            Delete
+                                <small class="text-muted d-md-none">
+                                    {{ $category->slug }}
+                                    @if ($category->parent)
+                                        · {{ $category->parent->name }}
+                                    @endif
+                                </small>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <code class="text-secondary small">{{ $category->slug }}</code>
+                            </td>
+                            <td class="d-none d-sm-table-cell">
+                                @if ($category->color)
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="rounded border flex-shrink-0"
+                                              style="width:18px;height:18px;background:{{ $category->color }};display:inline-block"></span>
+                                        <span class="small text-muted">{{ $category->color }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-muted small">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($category->is_active)
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                        {{ __('Active') }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                        {{ __('Inactive') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="d-none d-lg-table-cell">
+                                @if ($category->parent)
+                                    <div class="d-flex align-items-center gap-1">
+                                        <i class="ti ti-corner-down-right text-muted" style="font-size:13px"></i>
+                                        <span class="small">{{ $category->parent->name }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-muted small">—</span>
+                                @endif
+                            </td>
+                            <td class="d-none d-md-table-cell text-muted small">
+                                {{ $category->created_at->format('d M Y') }}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    @if (is_null($category->parent_id))
+                                        <button class="btn btn-sm btn-outline-success p-1"
+                                                title="{{ __('Add subcategory') }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalSubcategoria{{ $category->id }}">
+                                            <i class="ti ti-folder-plus" style="font-size:15px"></i>
+                                            {{ __('Add') }}
                                         </button>
+                                    @endif
+                                    <button class="btn btn-sm btn-outline-secondary p-1"
+                                            title="{{ __('Edit') }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEditar{{ $category->id }}">
+                                        <i class="ti ti-edit" style="font-size:15px"></i>
+                                        {{ __('Edit') }}
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger p-1"
+                                            title="{{ __('Delete') }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEliminar{{ $category->id }}">
+                                        <i class="ti ti-trash" style="font-size:15px"></i>
+                                        {{ __('Delete') }}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {{-- Modal Editar (uno por fila) --}}
+                        <div class="modal fade" id="modalEditar{{ $category->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border">
+                                    <div class="modal-header border-bottom py-3">
+                                        <h5 class="modal-title h6 fw-semibold d-flex align-items-center gap-2">
+                                            <i class="ti ti-edit text-primary" style="font-size:18px" aria-hidden="true"></i>
+                                            {{ __('Edit category') }}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                                    </div>
+                                    <form action="{{ route('categories.update', $category) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-body">
+                                            <div class="row g-3">
+                                                <div class="col-12 col-md-6">
+                                                    <label for="editName{{ $category->id }}" class="form-label small fw-medium">
+                                                        {{ __('Name') }} <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                           id="editName{{ $category->id }}"
+                                                           name="name"
+                                                           class="form-control form-control-sm"
+                                                           value="{{ $category->name }}"
+                                                           required>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label for="editSlug{{ $category->id }}" class="form-label small fw-medium">
+                                                        {{ __('Slug') }} <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text text-muted">/</span>
+                                                        <input type="text"
+                                                               id="editSlug{{ $category->id }}"
+                                                               name="slug"
+                                                               class="form-control"
+                                                               value="{{ $category->slug }}"
+                                                               required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-4">
+                                                    <label for="editColor{{ $category->id }}" class="form-label small fw-medium">{{ __('Color') }}</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="color"
+                                                               id="editColor{{ $category->id }}"
+                                                               class="form-control form-control-color form-control-sm edit-color-picker"
+                                                               value="{{ $category->color ?? '#6366f1' }}"
+                                                               style="max-width:48px">
+                                                        <input type="text"
+                                                               name="color"
+                                                               class="form-control edit-color-hex"
+                                                               value="{{ $category->color ?? '#6366f1' }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-4">
+                                                    <label for="editParent{{ $category->id }}" class="form-label small fw-medium">{{ __('Parent category') }}</label>
+                                                    <select id="editParent{{ $category->id }}" name="parent_id" class="form-select form-select-sm">
+                                                        <option value="">{{ __('None (root)') }}</option>
+                                                        @foreach ($parentCategories as $parent)
+                                                            @if ($parent->id !== $category->id)
+                                                                <option value="{{ $parent->id }}"
+                                                                    {{ $category->parent_id == $parent->id ? 'selected' : '' }}>
+                                                                    {{ $parent->name }}
+                                                                </option>
+                                                            @endif
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-12 col-md-4">
+                                                    <label class="form-label small fw-medium">{{ __('Status') }}</label>
+                                                    <div class="form-check form-switch mt-1">
+                                                        <input class="form-check-input"
+                                                               type="checkbox"
+                                                               name="is_active"
+                                                               id="editActive{{ $category->id }}"
+                                                               value="1"
+                                                               {{ $category->is_active ? 'checked' : '' }}>
+                                                        <label class="form-check-label small" for="editActive{{ $category->id }}">
+                                                            {{ __('Active') }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-top py-3">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                                                {{ __('Cancel') }}
+                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-primary d-flex align-items-center gap-2">
+                                                <i class="ti ti-device-floppy" style="font-size:15px"></i>
+                                                {{ __('Save changes') }}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Modal Eliminar (uno por fila) --}}
+                        <div class="modal fade" id="modalEliminar{{ $category->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content border">
+                                    <div class="modal-header border-bottom py-3">
+                                        <h5 class="modal-title h6 fw-semibold d-flex align-items-center gap-2">
+                                            <i class="ti ti-alert-triangle text-danger" style="font-size:18px" aria-hidden="true"></i>
+                                            {{ __('Delete category') }}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                                    </div>
+                                    <div class="modal-body py-4 text-center">
+                                        <p class="mb-1 fw-medium">{{ __('Delete') }} "{{ $category->name }}"?</p>
+                                        <p class="text-muted small mb-0">
+                                            {{ __('This action cannot be undone. Related subcategories will also be deleted.') }}
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer border-top justify-content-center gap-2 py-3">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                                            {{ __('Cancel') }}
+                                        </button>
+                                        <form action="{{ route('categories.destroy', $category) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center gap-2">
+                                                <i class="ti ti-trash" style="font-size:15px"></i>
+                                                {{ __('Yes, delete') }}
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        @if($loop->last)
-                    </div>
-                @endif
-            @empty
-                <p class="text-center text-muted py-5">There are no registered categories.</p>
-            @endforelse
+                        {{-- Modal Subcategoría --}}
+                        @if (is_null($category->parent_id))
+                        <div class="modal fade" id="modalSubcategoria{{ $category->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border">
+                                    <div class="modal-header border-bottom py-3">
+                                        <h5 class="modal-title h6 fw-semibold d-flex align-items-center gap-2">
+                                            <i class="ti ti-folder-plus text-success" style="font-size:18px" aria-hidden="true"></i>
+                                            {{ __('Add subcategory') }}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                                    </div>
+                                    <form action="{{ route('categories.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="parent_id" value="{{ $category->id }}">
+                                        <div class="modal-body">
+                                            <div class="alert alert-light border d-flex align-items-center gap-2 py-2 mb-3">
+                                                <i class="ti ti-corner-down-right text-muted" style="font-size:15px"></i>
+                                                <span class="small">
+                                                    {{ __('Parent') }}:
+                                                    <strong>{{ $category->name }}</strong>
+                                                </span>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-12 col-md-6">
+                                                    <label for="subName{{ $category->id }}" class="form-label small fw-medium">
+                                                        {{ __('Name') }} <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                           id="subName{{ $category->id }}"
+                                                           name="name"
+                                                           class="form-control form-control-sm sub-name-input"
+                                                           placeholder="ej. Hardware"
+                                                           required>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label for="subSlug{{ $category->id }}" class="form-label small fw-medium">
+                                                        {{ __('Slug') }} <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text text-muted">/</span>
+                                                        <input type="text"
+                                                               id="subSlug{{ $category->id }}"
+                                                               name="slug"
+                                                               class="form-control sub-slug-input"
+                                                               placeholder="hardware"
+                                                               required>
+                                                    </div>
+                                                    <div class="form-text">{{ __('Auto-generated from name.') }}</div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label for="subColor{{ $category->id }}" class="form-label small fw-medium">{{ __('Color') }}</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="color"
+                                                               id="subColor{{ $category->id }}"
+                                                               class="form-control form-control-color form-control-sm sub-color-picker"
+                                                               value="{{ $category->color ?? '#6366f1' }}"
+                                                               style="max-width:48px">
+                                                        <input type="text"
+                                                               name="color"
+                                                               class="form-control sub-color-hex"
+                                                               value="{{ $category->color ?? '#6366f1' }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="form-label small fw-medium">{{ __('Status') }}</label>
+                                                    <div class="form-check form-switch mt-1">
+                                                        <input class="form-check-input"
+                                                               type="checkbox"
+                                                               name="is_active"
+                                                               id="subActive{{ $category->id }}"
+                                                               value="1"
+                                                               checked>
+                                                        <label class="form-check-label small" for="subActive{{ $category->id }}">
+                                                            {{ __('Active') }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-top py-3">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                                                {{ __('Cancel') }}
+                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-success d-flex align-items-center gap-2">
+                                                <i class="ti ti-folder-plus" style="font-size:15px"></i>
+                                                {{ __('Save subcategory') }}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="ti ti-inbox d-block mb-2" style="font-size:32px"></i>
+                                {{ __('No categories found.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         {{-- Paginación --}}
-        <div class="mt-4">
-            {{ $categories->links() }}
+        <div class="card-footer bg-white d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 py-3">
+            <span class="text-muted small">
+                {{ __('Showing') }} {{ $categories->firstItem() }}–{{ $categories->lastItem() }}
+                {{ __('of') }} {{ $categories->total() }} {{ __('categories') }}
+            </span>
+            {{ $categories->withQueryString()->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
-    {{-- ── MODAL DE ELIMINACIÓN ── --}}
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-body text-center py-4 px-4">
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex
-                                align-items-center justify-content-center mb-3"
-                         style="width:56px; height:56px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0a1 1 0 01-1-1V5a1 1 0 011-1h6a1 1 0 011 1v1a1 1 0 01-1 1H9z"/>
-                        </svg>
-                    </div>
-                    {{-- FIX: título singular --}}
-                    <h5 class="fw-bold mb-1">Delete category</h5>
-                    <p class="text-muted small mb-1">
-                        You are about to delete <strong id="modalCategoryName"></strong>.
-                    </p>
-                    <p class="text-muted small mb-0">This action cannot be undone.</p>
-                </div>
-                <div class="modal-footer border-0 justify-content-center gap-2 pb-4">
-                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                    <form id="deleteForm" method="POST" class="d-inline">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger px-4">Yes, delete</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
+<script>
+    // Select all checkbox
+    document.getElementById('selectAll').addEventListener('change', function () {
+        document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = this.checked);
+    });
 
-            // ── Accordion manual ─────────────────────────────────────────
-            document.querySelectorAll('tr[data-collapse-target]').forEach(row => {
-                row.addEventListener('click', function (e) {
-                    if (e.target.closest('a, button, form')) return;
+    // Auto-generar slug desde nombre (formulario nuevo)
+    function toSlug(str) {
+        return str.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim().replace(/\s+/g, '-');
+    }
 
-                    const collapseEl = document.getElementById(this.dataset.collapseTarget);
-                    if (!collapseEl) return;
-
-                    const isOpen = collapseEl.classList.contains('show');
-
-                    if (isOpen) {
-                        collapseEl.classList.remove('show');
-                        this.setAttribute('aria-expanded', 'false');
-                        this.querySelector('.chevron-icon')?.style.setProperty('transform', 'rotate(0deg)');
-                    } else {
-                        collapseEl.classList.add('show');
-                        this.setAttribute('aria-expanded', 'true');
-                        this.querySelector('.chevron-icon')?.style.setProperty('transform', 'rotate(90deg)');
-                    }
-                });
-            });
-
-            // ── Vista list/grid ──────────────────────────────────────────
-            function setView(mode) {
-                const isList = mode === 'list';
-                document.getElementById('viewList').classList.toggle('d-none', !isList);
-                document.getElementById('viewGrid').classList.toggle('d-none', isList);
-                document.getElementById('btnList').classList.toggle('active', isList);
-                document.getElementById('btnGrid').classList.toggle('active', !isList);
-                localStorage.setItem('categoriesView', mode);
-            }
-            window.setView = setView; // exponer para los onclick del HTML
-
-            const savedView = localStorage.getItem('categoriesView');
-            if (savedView === 'grid') setView('grid');
-
-            // ── Modal de eliminación ─────────────────────────────────────
-            document.getElementById('deleteModal').addEventListener('show.bs.modal', function (e) {
-                const btn = e.relatedTarget;
-                document.getElementById('modalCategoryName').textContent = btn.dataset.categoryName;
-                document.getElementById('deleteForm').setAttribute('action', btn.dataset.action);
-            });
-
+    const nombreInput = document.getElementById('name');
+    const slugInput   = document.getElementById('slug');
+    if (nombreInput && slugInput) {
+        nombreInput.addEventListener('input', () => {
+            slugInput.value = toSlug(nombreInput.value);
         });
-    </script>
+    }
+
+    // Sincronizar color picker ↔ hex text (formulario nuevo)
+    const colorPicker = document.getElementById('color');
+    const colorHex    = document.getElementById('colorHex');
+    if (colorPicker && colorHex) {
+        colorPicker.addEventListener('input', () => colorHex.value = colorPicker.value);
+        colorHex.addEventListener('input', () => {
+            if (/^#[0-9A-Fa-f]{6}$/.test(colorHex.value)) colorPicker.value = colorHex.value;
+        });
+    }
+
+    // Sincronizar color picker <-> hex text (modales editar y subcategoria)
+    document.querySelectorAll('.modal').forEach(modal => {
+        const picker = modal.querySelector('.edit-color-picker, .sub-color-picker');
+        const hex    = modal.querySelector('.edit-color-hex, .sub-color-hex');
+        if (picker && hex) {
+            picker.addEventListener('input', () => hex.value = picker.value);
+            hex.addEventListener('input', () => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(hex.value)) picker.value = hex.value;
+            });
+        }
+    });
+
+    // Auto-generar slug en modales de subcategoria
+    document.querySelectorAll('.sub-name-input').forEach(nameInput => {
+        const modal     = nameInput.closest('.modal');
+        const slugInput = modal.querySelector('.sub-slug-input');
+        if (slugInput) {
+            nameInput.addEventListener('input', () => {
+                slugInput.value = toSlug(nameInput.value);
+            });
+        }
+    });
+</script>
 @endpush

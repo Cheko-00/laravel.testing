@@ -14,15 +14,15 @@ class Category extends Model
     use HasFactory;
 
     protected $casts = ['is_active' => 'boolean'];
-
-    public function subCategories(): HasMany
-    {
-        return $this->hasMany(Category::class, 'parent_id');
-    }
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
