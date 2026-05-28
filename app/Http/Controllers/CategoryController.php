@@ -5,17 +5,33 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $categories = Category::whereNull('parent_id')->with('subCategories')->latest()->paginate(9);
-        return view('categories.index', compact('categories'));
-    }
+    // CategoryController@index
+public function index(Request $request)
+{
+    $categories = Category::with('parent')
+        ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%")
+                                             ->orWhere('slug', 'like', "%{$request->search}%"))
+        ->when($request->status !== null && $request->status !== '', fn($q) => $q->where('is_active', $request->status))
+        ->when($request->type === 'root', fn($q) => $q->whereNull('parent_id'))
+        ->when($request->type === 'sub',  fn($q) => $q->whereNotNull('parent_id'))
+        ->paginate(15);
+
+    return view('categories.index', [
+        'categories'       => $categories,
+        'parentCategories' => Category::whereNull('parent_id')->get(),
+        'totalCount'       => Category::count(),
+        'activeCount'      => Category::where('is_active', true)->count(),
+        'inactiveCount'    => Category::where('is_active', false)->count(),
+        'rootCount'        => Category::whereNull('parent_id')->count(),
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.
