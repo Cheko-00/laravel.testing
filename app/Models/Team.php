@@ -30,4 +30,9 @@ class Team extends Model
         return $this->users()->wherePivot('role', 'leader');
     }
 
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
 }

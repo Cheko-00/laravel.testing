@@ -46,6 +46,9 @@
                                 <li><a class="dropdown-item" href="{{route('users.index')}}">{{__('Users')}}</a></li>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{route('tickets.index')}}">{{__('Tickets')}}</a>
+                        </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->
