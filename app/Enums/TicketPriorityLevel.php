@@ -38,6 +38,15 @@ enum TicketPriorityLevel: string
             self::CRITICAL => 'Critical',
         };
     }
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::LOW => 'bg-success',
+            self::MEDIUM => 'bg-warning',
+            self::HIGH => 'bg-danger',
+            self::CRITICAL => 'bg-dark',
+        };
+    }
 
     public static function options(): array
     {

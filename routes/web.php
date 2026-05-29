@@ -27,12 +27,6 @@ Route::middleware(['auth'])->group(function (){
     });
     Route::resource('users', UserController::class);
     Route::resource('categories', CategoryController::class);
-    Route::get('/categories/{category}/subcategories', function (\App\Models\Category $category) {
-        return $category->subcategories()
-            ->where('is_active', true)
-            ->select('id', 'name', 'color')
-            ->get();
-    });
     Route::get('/priority-leves', [PriorityController::class, 'index'])->name('priorities.index');
 
     Route::resource('tickets', TicketController::class);
