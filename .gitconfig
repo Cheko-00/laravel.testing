@@ -1,2 +1,5 @@
 [safe]
 	directory = /var/www
+[user]
+	name = Sergio Garcia
+	email = sergiogarcia.php@gmail.com
