@@ -56,3 +56,34 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Using Bun (instead of npm)
+
+This project can use Bun as the JavaScript package manager/runtime instead of `npm`.
+
+- Install dependencies:
+
+```bash
+bun install
+```
+
+- Run the Vite dev server:
+
+```bash
+bun run dev
+```
+
+- Build assets for production:
+
+```bash
+bun run build
+```
+
+If you previously had a `package-lock.json`, remove it before switching (Bun will create `bun.lockb` on first install):
+
+```bash
+rm package-lock.json
+bun install
+```
+
+If you're running the app inside Docker, the `Dockerfile` is updated to install Bun so `bun` is available during builds and container shells.
